@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "scripts": {
+    "watchify": "watchify -t babelify main.js -o public/bundle.js -d -v"
+  },
+  "dependencies": {
+    "dynamics.js": "^1.1.4",
+    "history": "^3.0.0",
+    "promised-reducer": "^0.1.0",
+    "react": "^15.3.1",
+    "react-addons-transition-group": "^15.3.1",
+    "react-dom": "^15.3.1"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
+    "babel-preset-es2015": "^6.13.2",
+    "babel-preset-react": "^6.11.1",
+    "babelify": "^7.3.0",
+    "watchify": "^3.7.0"
+  }
+}

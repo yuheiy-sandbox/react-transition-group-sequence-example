@@ -3,19 +3,23 @@ const {EventEmitter} = require('events');
 const React = require('react');
 const TransitionGroup = require('react-addons-transition-group');
 import PromisedReducer from 'promised-reducer';
-const Page = require('../components/Page');
 const HomePage = require('../components/page/Home');
 const AboutPage = require('../components/page/About');
 const WorkPage = require('../components/page/Work');
 
-const matchURI = ({pathname}) => {
+const matchURI = ({pathname}, dispatch) => {
+  const props = {
+    key: pathname,
+    dispatch
+  };
+
   switch (pathname) {
     case '/':
-      return <HomePage />;
+      return <HomePage {...props} />
     case '/about':
-      return <AboutPage />;
+      return <AboutPage {...props} />
     case '/work':
-      return <WorkPage />;
+      return <WorkPage {...props} />
     default:
       return null;
   }
@@ -24,40 +28,41 @@ const matchURI = ({pathname}) => {
 class PageContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
+
+    const initialState = {
       location: props.location
     };
+    this.state = initialState;
 
-    const reducer = new PromisedReducer();
-    this._reducer = reducer;
+    const reducer = new PromisedReducer(initialState);
     reducer.on(':update', state => this.setState(state));
 
     const emitter = new EventEmitter();
-    this._emitter = emitter;
-    this._dispatch = emitter.emit.bind(emitter);
+    this.dispatch = emitter.emit.bind(emitter);
 
     const subscribe = emitter.on.bind(emitter);
     subscribe(
       'push-queue',
       queue => reducer.update(state => queue().then(() => state))
     );
+    subscribe(
+      'update-location',
+      location => reducer.update(state => ({location}))
+    );
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.location.pathname !== this.props.location) {
-      this._reducer.update(() => ({location: nextProps.location}));
+      this.dispatch('update-location', nextProps.location);
     }
   }
 
   render() {
-    const {location} = this.state;
-    const matchComponent = matchURI(location);
+    const matchComponent = matchURI(this.state.location, this.dispatch);
 
     return (
       <TransitionGroup component="div">
-        <Page key={location.pathname} dispatch={this._dispatch}>
-          {matchComponent}
-        </Page>
+        {matchComponent}
       </TransitionGroup>
     );
   }
